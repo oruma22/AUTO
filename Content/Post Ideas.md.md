@@ -1,0 +1,4 @@
+- Day 1 building Duolingo for AI builders
+- How I automated my coding streak
+- n8n workflow for build reminders
+- AI-generated project challenges
