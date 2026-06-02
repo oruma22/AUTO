@@ -2,4 +2,4 @@
 - Dashboard → `/app/page.tsx`
 - Upload Proof → `/api/upload`
 - Streak Logic → `/lib/streak.ts`
-- Database → Supabase tables
+- Database → InstForge

@@ -1,0 +1,320 @@
+{
+  "name": "AI Submission Validator Workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "validate-submission",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "webhook-trigger",
+      "name": "Webhook Trigger"
+    },
+    {
+      "parameters": {
+        "jsCode": "const githubUrl = $json.submission.github_url || '';\nconst parts = githubUrl.replace(/\\/$/, '').split('/');\nconst repo = parts.pop() || '';\nconst owner = parts.pop() || '';\n\nreturn {\n  owner,\n  repo,\n  has_github: !!(owner && repo),\n  submission_id: $json.submission_id,\n  user_id: $json.user_id,\n  challenge: $json.challenge,\n  submission: $json.submission,\n  phase1_score: $json.phase1_score,\n  phase1_signals: $json.phase1_signals,\n  callback_url: $json.callback_url\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        200,
+        0
+      ],
+      "id": "parse-github-url",
+      "name": "Parse GitHub URL"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.github.com/repos/{{ $json.owner }}/{{ $json.repo }}/contents",
+        "sendHeaders": true,
+        "headersUi": {
+          "values": [
+            {
+              "name": "User-Agent",
+              "value": "n8n-automation-validator"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        400,
+        -150
+      ],
+      "id": "fetch-contents",
+      "name": "Fetch GitHub Contents"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.github.com/repos/{{ $('Parse GitHub URL').item.json.owner }}/{{ $('Parse GitHub URL').item.json.repo }}/commits",
+        "sendHeaders": true,
+        "headersUi": {
+          "values": [
+            {
+              "name": "User-Agent",
+              "value": "n8n-automation-validator"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        400,
+        0
+      ],
+      "id": "fetch-commits",
+      "name": "Fetch GitHub Commits"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.github.com/repos/{{ $('Parse GitHub URL').item.json.owner }}/{{ $('Parse GitHub URL').item.json.repo }}/readme",
+        "sendHeaders": true,
+        "headersUi": {
+          "values": [
+            {
+              "name": "User-Agent",
+              "value": "n8n-automation-validator"
+            },
+            {
+              "name": "Accept",
+              "value": "application/vnd.github.v3.raw"
+            }
+          ]
+        },
+        "options": {
+          "neverError": true
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        400,
+        150
+      ],
+      "id": "fetch-readme",
+      "name": "Fetch GitHub README"
+    },
+    {
+      "parameters": {
+        "jsCode": "const filesData = $('Fetch GitHub Contents').all().map(item => item.json);\nconst commitsData = $('Fetch GitHub Commits').all().map(item => item.json);\nconst readmeData = $('Fetch GitHub README').all().map(item => item.json);\n\nconst mainInput = $('Parse GitHub URL').item.json;\n\n// Format files list\nconst fileList = Array.isArray(filesData[0]) \n  ? filesData[0].map(f => `- ${f.path} (${f.type})`).join('\\n')\n  : 'No files retrieved.';\n\n// Format recent commits\nconst recentCommits = Array.isArray(commitsData[0])\n  ? commitsData[0].slice(0, 5).map(c => `- [${c.sha.slice(0, 7)}] ${c.commit.message} by ${c.commit.author.name} on ${c.commit.author.date}`).join('\\n')\n  : 'No commits found.';\n\n// Raw readme content\nlet readmeContent = typeof readmeData[0] === 'string' \n  ? readmeData[0] \n  : (readmeData[0] && readmeData[0].content ? readmeData[0].content : 'No README content found.');\n\nreturn {\n  ...mainInput,\n  github_file_list: fileList,\n  readme_content: readmeContent,\n  recent_commits: recentCommits\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        650,
+        0
+      ],
+      "id": "prepare-prompt",
+      "name": "Prepare Prompt"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aiAgent",
+      "typeVersion": 1,
+      "position": [
+        850,
+        0
+      ],
+      "id": "ai-agent",
+      "name": "AI Agent Node"
+    },
+    {
+      "parameters": {
+        "model": "gpt-4o",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        800,
+        200
+      ],
+      "id": "openai-model",
+      "name": "OpenAI Chat Model"
+    },
+    {
+      "parameters": {
+        "promptType": "custom",
+        "text": "=You are a technical project validator for a developer habit-building app.\n\nYour job is to evaluate whether a submitted project genuinely completes\nthe given challenge or is still a work in progress.\n\n---\nCHALLENGE:\nTitle: {{ $json.challenge.title }}\nDescription: {{ $json.challenge.description }}\nExpected Deliverables: {{ $json.challenge.expected_deliverables }}\nDifficulty: {{ $json.challenge.difficulty }}\n\n---\nSUBMISSION EVIDENCE:\n\nGitHub Repository Contents:\n{{ $json.github_file_list }}\n\nREADME Content:\n{{ $json.readme_content }}\n\nRecent Commits (last 5):\n{{ $json.recent_commits }}\n\nUser's Written Description:\n{{ $json.submission.proof_text }}\n\nPhase 1 Rule Signals:\n{{ $json.phase1_signals }}\n\n---\nEVALUATION CRITERIA:\n\n1. RELEVANCE — Does the project actually address the challenge brief?\n2. COMPLETENESS — Is there working functionality, not just scaffolding?\n3. EFFORT — Does the commit history and code volume show real work?\n4. DOCUMENTATION — Is there any README or description explaining what was built?\n\n---\nRespond ONLY with a valid JSON object. No explanation outside the JSON.\n\n{\n  \"verdict\": \"complete\" | \"in_progress\" | \"insufficient\",\n  \"confidence\": 0-100,\n  \"score\": 0-100,\n  \"criteria_scores\": {\n    \"relevance\": 0-100,\n    \"completeness\": 0-100,\n    \"effort\": 0-100,\n    \"documentation\": 0-100\n  },\n  \"feedback\": \"2-3 sentence explanation shown to the user\",\n  \"internal_notes\": \"1 sentence reasoning for your verdict\",\n  \"missing_elements\": [\"list\", \"of\", \"what's\", \"missing\"]\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.6,
+      "position": [
+        950,
+        200
+      ],
+      "id": "agent-evaluator",
+      "name": "Agent Evaluator"
+    },
+    {
+      "parameters": {
+        "jsCode": "let responseText = $json.output || $json.text || '';\n// Strip markdown code fences if LLM wraps output in ```json ... ```\nresponseText = responseText.trim().replace(/^```json/, '').replace(/```$/, '').trim();\n\nlet parsed = {};\ntry {\n  parsed = JSON.parse(responseText);\n} catch (e) {\n  parsed = {\n    verdict: \"insufficient\",\n    confidence: 30,\n    score: 20,\n    feedback: \"Could not parse evaluation format structure from AI agent output.\",\n    missing_elements: [\"Valid AI response structure\"]\n  };\n}\n\nreturn {\n  submission_id: $('Prepare Prompt').item.json.submission_id,\n  verdict: parsed.verdict || \"insufficient\",\n  confidence: parsed.confidence || 0,\n  score: parsed.score || 0,\n  criteria_scores: parsed.criteria_scores || { relevance: 0, completeness: 0, effort: 0, documentation: 0 },\n  feedback: parsed.feedback || \"Evaluation verdict concluded by validator node.\",\n  missing_elements: parsed.missing_elements || []\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1100,
+        0
+      ],
+      "id": "parse-ai-verdict",
+      "name": "Parse AI Verdict"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Prepare Prompt').item.json.callback_url }}",
+        "sendBody": true,
+        "bodyParametersUi": {
+          "values": [
+            {
+              "name": "submission_id",
+              "value": "={{ $json.submission_id }}"
+            },
+            {
+              "name": "verdict",
+              "value": "={{ $json.verdict }}"
+            },
+            {
+              "name": "confidence",
+              "value": "={{ $json.confidence }}"
+            },
+            {
+              "name": "score",
+              "value": "={{ $json.score }}"
+            },
+            {
+              "name": "criteria_scores",
+              "value": "={{ JSON.stringify($json.criteria_scores) }}"
+            },
+            {
+              "name": "feedback",
+              "value": "={{ $json.feedback }}"
+            },
+            {
+              "name": "missing_elements",
+              "value": "={{ JSON.stringify($json.missing_elements) }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        1300,
+        0
+      ],
+      "id": "callback-dispatcher",
+      "name": "Callback Dispatcher"
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Parse GitHub URL",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse GitHub URL": {
+      "main": [
+        [
+          {
+            "node": "Fetch GitHub Contents",
+            "index": 0
+          },
+          {
+            "node": "Fetch GitHub Commits",
+            "index": 0
+          },
+          {
+            "node": "Fetch GitHub README",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch GitHub Contents": {
+      "main": [
+        [
+          {
+            "node": "Prepare Prompt",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch GitHub Commits": {
+      "main": [
+        [
+          {
+            "node": "Prepare Prompt",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch GitHub README": {
+      "main": [
+        [
+          {
+            "node": "Prepare Prompt",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Prompt": {
+      "main": [
+        [
+          {
+            "node": "AI Agent Node",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent Node": {
+      "main": [
+        [
+          {
+            "node": "Parse AI Verdict",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse AI Verdict": {
+      "main": [
+        [
+          {
+            "node": "Callback Dispatcher",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "active": false,
+  "meta": {
+    "templateId": ""
+  }
+}

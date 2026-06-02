@@ -8,10 +8,10 @@
 - Next.js API Routes
 
 ## Database
-- Supabase PostgreSQL
+- InstForge
 
 ## Authentication
-- Supabase Auth
+- InstForge Auth
 
 ## Automation
 - n8n

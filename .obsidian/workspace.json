@@ -33,12 +33,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Project/Project → BuildOS Mapping.md.md",
+                "file": "Architecture/Tech-stack.md.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Project → BuildOS Mapping.md"
+              "title": "Tech-stack.md"
             }
           }
         ]
@@ -114,7 +114,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Project/Project → BuildOS Mapping.md.md",
+                "file": "Architecture/Tech-stack.md.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -124,7 +124,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Backlinks for Project → BuildOS Mapping.md"
+              "title": "Backlinks for Tech-stack.md"
             }
           },
           {
@@ -133,12 +133,12 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "Project/Project → BuildOS Mapping.md.md",
+                "file": "Architecture/Tech-stack.md.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               },
               "icon": "links-going-out",
-              "title": "Outgoing links from Project → BuildOS Mapping.md"
+              "title": "Outgoing links from Tech-stack.md"
             }
           },
           {
@@ -176,13 +176,13 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "Project/Project → BuildOS Mapping.md.md",
+                "file": "Architecture/Tech-stack.md.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "Outline of Project → BuildOS Mapping.md"
+              "title": "Outline of Tech-stack.md"
             }
           }
         ]
@@ -203,27 +203,33 @@
       "bases:Create new base": false
     }
   },
-  "active": "c4b8c3583f06a601",
+  "active": "e74dbb029142b1c1",
   "lastOpenFiles": [
-    "src/app/dashboard.module.css",
-    "Architecture/Tech-stack.md.md",
     "Project/Project → BuildOS Mapping.md.md",
-    "Project",
+    "src/app/api/challenge/route.ts",
+    "src/app/api/challenge",
+    "src/app/api",
+    "node_modules/typescript/lib/zh-tw/diagnosticMessages.generated.json",
+    "node_modules/typescript/lib/zh-cn/diagnosticMessages.generated.json",
+    "node_modules/typescript/lib/ru/diagnosticMessages.generated.json",
+    "node_modules/typescript/lib/pt-br/diagnosticMessages.generated.json",
+    "node_modules/typescript/lib/pl/diagnosticMessages.generated.json",
+    "node_modules/typescript/lib/tr/diagnosticMessages.generated.json",
+    "node_modules/typescript/lib/ko/diagnosticMessages.generated.json",
+    "node_modules/typescript/SECURITY.md",
+    "node_modules/typescript/README.md",
+    "node_modules/react/README.md",
+    "node_modules/styled-jsx/readme.md",
+    "node_modules/styled-jsx/license.md",
+    "public/smart_automation.png",
+    "node_modules/lightningcss-win32-x64-msvc/README.md",
+    "Architecture/Tech-stack.md.md",
     "src/app/Project → BuildOS Mapping.md.md",
     "README.md",
     "CLAUDE.md",
     "AGENTS.md",
     "Workflow/workflows.md",
     "Vision/Core Loop.md.md",
-    "node_modules/sharp/node_modules/semver/internal/identifiers.js",
-    "node_modules/sharp/node_modules/semver/functions/lt.js",
-    "node_modules/sharp/node_modules/semver/classes/range.js",
-    "node_modules/sharp/node_modules/semver/ranges/valid.js",
-    "node_modules/sharp/node_modules/semver/ranges/to-comparators.js",
-    "node_modules/sharp/node_modules/semver/ranges/subset.js",
-    "node_modules/sharp/node_modules/semver/ranges/simplify.js",
-    "node_modules/sharp/node_modules/semver/ranges/outside.js",
-    "node_modules/sharp/node_modules/semver/ranges/min-version.js",
     "node_modules/sharp/node_modules/semver/README.md",
     "node_modules/sharp/README.md",
     "node_modules/magic-string/README.md",
@@ -235,12 +241,6 @@
     "node_modules/source-map-js/README.md",
     "node_modules/postcss/README.md",
     "node_modules/next/dist/docs/01-app/03-api-reference/05-config/01-next-config-js/optimizePackageImports.md",
-    "node_modules/next/dist/docs/01-app/03-api-reference/05-config/01-next-config-js/webVitalsAttribution.md",
-    "node_modules/next/dist/docs/01-app/03-api-reference/05-config/01-next-config-js/webpack.md",
-    "node_modules/next/dist/docs/01-app/03-api-reference/05-config/01-next-config-js/viewTransition.md",
-    "node_modules/next/dist/docs/01-app/03-api-reference/05-config/01-next-config-js/useLightningcss.md",
-    "node_modules/next/dist/docs/01-app/03-api-reference/05-config/01-next-config-js/urlImports.md",
-    "node_modules/next/dist/docs/01-app/03-api-reference/05-config/01-next-config-js/typescript.md",
     "public/window.svg",
     "public/vercel.svg",
     "public/next.svg",
